@@ -1,0 +1,124 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Main window -->
+    <Color x:Key="WindowBgColor">#c8c8c8</Color>
+    <Color x:Key="WindowInnerBgColor">#e8e8e8</Color>
+    <Color x:Key="TitleBgColor">#d5d5d5</Color>
+
+    <!-- Text -->
+    <Color x:Key="TextColor">#1a1a1a</Color>
+    <Color x:Key="TextSecondaryColor">#555555</Color>
+    <Color x:Key="TextMutedColor">#777777</Color>
+    <Color x:Key="TextPlaceholderColor">#999999</Color>
+
+    <!-- Input -->
+    <Color x:Key="InputBgColor">#fafafa</Color>
+    <Color x:Key="InputTextColor">#1a1a1a</Color>
+    <Color x:Key="InputCaretColor">#4a7ab5</Color>
+    <Color x:Key="InputBorderColor">#c0c0c0</Color>
+
+    <!-- Accent -->
+    <Color x:Key="AccentColor">#4a7ab5</Color>
+    <Color x:Key="AccentTextColor">#ffffff</Color>
+    <Color x:Key="ButtonBgColor">#c8c8c8</Color>
+    <Color x:Key="ButtonTextColor">#1a1a1a</Color>
+
+    <!-- Status colors -->
+    <Color x:Key="SuccessColor">#43a047</Color>
+    <Color x:Key="DangerColor">#d32f2f</Color>
+    <Color x:Key="WarningColor">#e69000</Color>
+    <Color x:Key="InfoColor">#7b1fa2</Color>
+
+    <!-- ScrollBar -->
+    <Color x:Key="ScrollThumbColor">#b0b0b0</Color>
+    <Color x:Key="ScrollThumbHoverColor">#909090</Color>
+
+    <!-- Tab -->
+    <Color x:Key="TabBgColor">#d5d5d5</Color>
+    <Color x:Key="TabActiveBgColor">#e8e8e8</Color>
+    <Color x:Key="TabActiveTextColor">#4a7ab5</Color>
+    <Color x:Key="TabInactiveTextColor">#7a7a7a</Color>
+
+    <!-- List / Item -->
+    <Color x:Key="ItemBgColor">#dcdcdc</Color>
+    <Color x:Key="ListBgColor">#f0f0f0</Color>
+    <Color x:Key="BorderBgColor">#dcdcdc</Color>
+
+    <!-- Separator -->
+    <Color x:Key="SplitterColor">#c0c0c0</Color>
+
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="WindowBgBrush" Color="{StaticResource WindowBgColor}"/>
+    <SolidColorBrush x:Key="WindowInnerBgBrush" Color="{StaticResource WindowInnerBgColor}"/>
+    <SolidColorBrush x:Key="TitleBgBrush" Color="{StaticResource TitleBgColor}"/>
+    <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+    <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}"/>
+    <SolidColorBrush x:Key="TextPlaceholderBrush" Color="{StaticResource TextPlaceholderColor}"/>
+    <SolidColorBrush x:Key="InputBgBrush" Color="{StaticResource InputBgColor}"/>
+    <SolidColorBrush x:Key="InputTextBrush" Color="{StaticResource InputTextColor}"/>
+    <SolidColorBrush x:Key="InputCaretBrush" Color="{StaticResource InputCaretColor}"/>
+    <SolidColorBrush x:Key="InputBorderBrush" Color="{StaticResource InputBorderColor}"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+    <SolidColorBrush x:Key="AccentTextBrush" Color="{StaticResource AccentTextColor}"/>
+    <SolidColorBrush x:Key="ButtonBgBrush" Color="{StaticResource ButtonBgColor}"/>
+    <SolidColorBrush x:Key="ButtonTextBrush" Color="{StaticResource ButtonTextColor}"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
+    <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}"/>
+    <SolidColorBrush x:Key="ScrollThumbBrush" Color="{StaticResource ScrollThumbColor}"/>
+    <SolidColorBrush x:Key="ScrollThumbHoverBrush" Color="{StaticResource ScrollThumbHoverColor}"/>
+    <SolidColorBrush x:Key="TabBgBrush" Color="{StaticResource TabBgColor}"/>
+    <SolidColorBrush x:Key="TabActiveBgBrush" Color="{StaticResource TabActiveBgColor}"/>
+    <SolidColorBrush x:Key="TabActiveTextBrush" Color="{StaticResource TabActiveTextColor}"/>
+    <SolidColorBrush x:Key="TabInactiveTextBrush" Color="{StaticResource TabInactiveTextColor}"/>
+    <SolidColorBrush x:Key="ItemBgBrush" Color="{StaticResource ItemBgColor}"/>
+    <SolidColorBrush x:Key="ListBgBrush" Color="{StaticResource ListBgColor}"/>
+    <SolidColorBrush x:Key="BorderBgBrush" Color="{StaticResource BorderBgColor}"/>
+    <SolidColorBrush x:Key="SplitterBrush" Color="{StaticResource SplitterColor}"/>
+
+    <!-- ScrollBar style -->
+    <Style TargetType="ScrollBar" x:Key="DarkScrollBar">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Width" Value="5"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Grid Background="Transparent">
+                        <Track x:Name="PART_Track" IsDirectionReversed="False">
+                            <Track.Thumb>
+                                <Thumb BorderThickness="0" MinHeight="20">
+                                    <Thumb.Style>
+                                        <Style TargetType="Thumb">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Thumb">
+                                                        <Border Background="{DynamicResource ScrollThumbBrush}" CornerRadius="3" Margin="0,2"/>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Thumb">
+                                                                <Border Background="{DynamicResource ScrollThumbHoverBrush}" CornerRadius="3" Margin="0,2"/>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Thumb.Style>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="ScrollBar" BasedOn="{StaticResource DarkScrollBar}"/>
+</ResourceDictionary>
