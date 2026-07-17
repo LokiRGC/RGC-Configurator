@@ -12,3 +12,6 @@ obj/
 ## OS
 Thumbs.db
 .DS_Store
+
+# Firebase
+RGC/firebase-key.json

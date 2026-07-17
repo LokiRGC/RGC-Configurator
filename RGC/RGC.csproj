@@ -11,12 +11,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="app_icon.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="app_icon.ico;firebase-key.json" CopyToOutputDirectory="PreserveNewest" />
     <Resource Include="login_logo.png;folder_icon.png;trash_icon.png;json_icon.png;mod_icon.png;project_icon.png" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.3.0.90" />
+    <PackageReference Include="FirebaseAdmin" Version="3.1.0" />
+    <PackageReference Include="Google.Cloud.Firestore" Version="3.9.0" />
   </ItemGroup>
 
 </Project>
