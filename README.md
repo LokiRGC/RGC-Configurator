@@ -119,7 +119,25 @@ dotnet build -c Release
 
 ## 🖼 Скриншоты
 
-*(добавьте скриншоты — библиотека проектов, главное окно с настройками, вкладка запуска)*
+<p align="center">
+  <img src="screenshots/image.png" width="700" alt="Главное окно">
+  <br><em>Главное окно с настройками сервера</em>
+</p>
+
+<p align="center">
+  <img src="screenshots/4.png" width="700" alt="Библиотека проектов">
+  <br><em>Библиотека проектов</em>
+</p>
+
+<p align="center">
+  <img src="screenshots/22.png" width="700" alt="Вкладка Запуск">
+  <br><em>Вкладка запуска сервера</em>
+</p>
+
+<p align="center">
+  <img src="screenshots/333.png" width="700" alt="SteamCMD установка">
+  <br><em>Установка сервера через SteamCMD</em>
+</p>
 
 ---
 
