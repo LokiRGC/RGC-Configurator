@@ -8,6 +8,8 @@ namespace RGC.Models
         public string Name { get; set; } = "";
         public string FullPath { get; set; } = "";
         public bool IsFile { get; set; }
+        public string ModName { get; set; } = "";
+        public Visibility ModBadgeVisibility => string.IsNullOrEmpty(ModName) ? Visibility.Collapsed : Visibility.Visible;
 
         public string IconSrc
         {

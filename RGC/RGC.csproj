@@ -11,7 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="app_icon.ico;firebase-key.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="app_icon.ico" CopyToOutputDirectory="PreserveNewest" />
+    <EmbeddedResource Include="firebase-key.json" />
     <Resource Include="login_logo.png;folder_icon.png;trash_icon.png;json_icon.png;mod_icon.png;project_icon.png" />
   </ItemGroup>
 

@@ -709,16 +709,24 @@ namespace RGC
                 return;
             }
 
+            var allModNames = _modList.Select(m => m.Name)
+                .Concat(_serverModList.Select(m => m.Name))
+                .ToList();
+            var mapping = allModNames.Count > 0 ? new ModConfigMappingService(allModNames) : null;
+
             _profileTreeRoots.Clear();
             foreach (var dir in Directory.GetDirectories(profilesDir).OrderBy(d => Path.GetFileName(d)))
             {
+                var folderName = Path.GetFileName(dir);
                 var root = new TreeItem
                 {
-                    Name = Path.GetFileName(dir),
+                    Name = folderName,
                     FullPath = dir,
                     IsFile = false
                 };
-                BuildTree(root);
+                if (mapping != null)
+                    root.ModName = mapping.FindModForFolder(folderName) ?? "";
+                BuildTree(root, mapping, root.ModName);
                 _profileTreeRoots.Add(root);
             }
 
@@ -734,28 +742,37 @@ namespace RGC
                 NotificationService.Show($"Найдено {_profileTreeRoots.Count} папок конфигов", 2000);
         }
 
-        private static void BuildTree(TreeItem parent)
+        private void BuildTree(TreeItem parent, ModConfigMappingService? mapping, string inheritedModName = "")
         {
             try
             {
                 foreach (var dir in Directory.GetDirectories(parent.FullPath).OrderBy(d => Path.GetFileName(d)))
                 {
+                    var folderName = Path.GetFileName(dir);
+                    var modName = inheritedModName;
+                    if (string.IsNullOrEmpty(modName) && mapping != null)
+                        modName = mapping.FindModForFolder(folderName) ?? "";
                     var item = new TreeItem
                     {
-                        Name = Path.GetFileName(dir),
+                        Name = folderName,
                         FullPath = dir,
-                        IsFile = false
+                        IsFile = false,
+                        ModName = modName
                     };
-                    BuildTree(item);
+                    BuildTree(item, mapping, modName);
                     parent.Children.Add(item);
                 }
                 foreach (var file in Directory.GetFiles(parent.FullPath).OrderBy(f => Path.GetFileName(f)))
                 {
+                    var modName = inheritedModName;
+                    if (string.IsNullOrEmpty(modName) && mapping != null)
+                        modName = mapping.FindModForFile(Path.GetFileName(file)) ?? "";
                     parent.Children.Add(new TreeItem
                     {
                         Name = Path.GetFileName(file),
                         FullPath = file,
-                        IsFile = true
+                        IsFile = true,
+                        ModName = modName
                     });
                 }
             }

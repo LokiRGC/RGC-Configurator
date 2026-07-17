@@ -4,6 +4,12 @@ using System.Windows;
 using System.Windows.Controls;
 using RGC.Models;
 using RGC.Services;
+using Button = System.Windows.Controls.Button;
+using Image = System.Windows.Controls.Image;
+using TextBox = System.Windows.Controls.TextBox;
+using MessageBox = System.Windows.MessageBox;
+using Application = System.Windows.Application;
+using Localization = RGC.Services.Localization;
 
 namespace RGC
 {
@@ -12,12 +18,12 @@ namespace RGC
         public static Project? LastOpenedProject { get; private set; }
         private static readonly System.Windows.Media.Color[] AccentColors = new[]
         {
-            System.Windows.Media.Color.FromRgb(0x89, 0xb4, 0xfa), // blue
-            System.Windows.Media.Color.FromRgb(0xa6, 0xe3, 0xa1), // green
-            System.Windows.Media.Color.FromRgb(0xf5, 0xc2, 0xe7), // pink
-            System.Windows.Media.Color.FromRgb(0xfa, 0xe8, 0xb0), // yellow
-            System.Windows.Media.Color.FromRgb(0xba, 0xc7, 0xfa), // lavender
-            System.Windows.Media.Color.FromRgb(0x94, 0xe2, 0xd5), // teal
+            System.Windows.Media.Color.FromRgb(0x89, 0xb4, 0xfa),
+            System.Windows.Media.Color.FromRgb(0xa6, 0xe3, 0xa1),
+            System.Windows.Media.Color.FromRgb(0xf5, 0xc2, 0xe7),
+            System.Windows.Media.Color.FromRgb(0xfa, 0xe8, 0xb0),
+            System.Windows.Media.Color.FromRgb(0xba, 0xc7, 0xfa),
+            System.Windows.Media.Color.FromRgb(0x94, 0xe2, 0xd5),
         };
 
         public ProjectLibraryWindow()
@@ -25,36 +31,52 @@ namespace RGC
             InitializeComponent();
             ApplyLang();
             LoadProjects();
+            LoadFtpProjects();
+            LoadTools();
         }
 
         private void ApplyLang()
         {
-            LibTitle.Text = RGC.Services.Localization.T("lib.title");
-            NewProjectBtn.Content = RGC.Services.Localization.T("lib.new");
-            EmptyTitle.Text = RGC.Services.Localization.T("lib.empty_title");
-            EmptyDesc.Text = RGC.Services.Localization.T("lib.empty_desc");
-            EmptyBtn.Content = RGC.Services.Localization.T("lib.empty_btn");
+            LibTitle.Text = Localization.T("lib.title");
+            NewProjectBtn.Content = Localization.T("lib.new");
+            LocalHeader.Text = Localization.T("lib.local_title");
+            FtpHeader.Text = Localization.T("lib.ftp_title");
+            ToolsHeader.Text = Localization.T("lib.tools_title");
         }
 
         private void LoadProjects()
         {
-            ProjectTilesPanel.Children.Clear();
+            LocalPanel.Children.Clear();
             var projects = ProjectService.LoadAll();
             projects = projects.OrderByDescending(p => p.LastOpenedAt).ToList();
 
-            var cnt = projects.Count;
-            var isEn = SettingsService.Language == "EN";
-            var cntStr = isEn ? (cnt == 1 ? "project" : "projects")
-                              : (cnt == 1 ? "проект" : (cnt >= 2 && cnt <= 4 ? "проекта" : "проектов"));
-            ProjectCountText.Text = $"{cnt} {cntStr}";
-            EmptyState.Visibility = projects.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-            ScrollArea.Visibility = projects.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
-
             for (var i = 0; i < projects.Count; i++)
-                ProjectTilesPanel.Children.Add(CreateCard(projects[i], i));
+                LocalPanel.Children.Add(CreateLocalCard(projects[i], i));
         }
 
-        private System.Windows.Controls.Border CreateCard(Project project, int index)
+        private void LoadFtpProjects()
+        {
+            FtpPanel.Children.Clear();
+            var ftpList = FtpProjectService.LoadAll();
+            ftpList = ftpList.OrderByDescending(p => p.LastOpenedAt).ToList();
+
+            for (var i = 0; i < ftpList.Count; i++)
+                FtpPanel.Children.Add(CreateFtpCard(ftpList[i], i));
+        }
+
+        private void LoadTools()
+        {
+            ToolsPanel.Children.Clear();
+            var tools = new[]
+            {
+                new ToolItem { Name = "SteamCMD", Icon = "⬇", Description = Localization.T("tools.steamcmd"), Action = "steamcmd" },
+                new ToolItem { Name = "Config Converter", Icon = "🔄", Description = Localization.T("tools.configconv"), Action = "configconv" },
+            };
+            for (var i = 0; i < tools.Length; i++)
+                ToolsPanel.Children.Add(CreateToolCard(tools[i], i));
+        }
+
+        private Border CreateLocalCard(Project project, int index)
         {
             var c = System.Windows.Media.Color.FromRgb;
             var accent = AccentColors[index % AccentColors.Length];
@@ -62,7 +84,6 @@ namespace RGC
             var serverOk = !string.IsNullOrEmpty(project.ServerPath)
                 && System.IO.Directory.Exists(project.ServerPath);
 
-            // Get DayZ version
             var dayzVersion = "";
             if (serverOk)
             {
@@ -79,7 +100,6 @@ namespace RGC
                 catch { }
             }
 
-            // === ENTRANCE ANIMATION: fade in + slide up ===
             var entranceTransform = new System.Windows.Media.TranslateTransform(0, 30);
             var entranceAnim = new System.Windows.Media.Animation.DoubleAnimation
             {
@@ -94,8 +114,7 @@ namespace RGC
                 EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
             };
 
-            // Avatar icon
-            var avatar = new System.Windows.Controls.Border
+            var avatar = new Border
             {
                 Width = 44, Height = 44,
                 CornerRadius = new System.Windows.CornerRadius(12),
@@ -103,69 +122,64 @@ namespace RGC
                 HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
                 VerticalAlignment = System.Windows.VerticalAlignment.Top,
                 Margin = new System.Windows.Thickness(20, 20, 0, 0),
-                Child = new System.Windows.Controls.Image
+                Child = new Image
                 {
                     Source = new System.Windows.Media.Imaging.BitmapImage(
-                        new System.Uri("pack://application:,,,/project_icon.png")),
+                        new Uri("pack://application:,,,/project_icon.png")),
                     Width = 24, Height = 24,
                     HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
                     VerticalAlignment = System.Windows.VerticalAlignment.Center
                 }
             };
 
-            // Project name
-            var nameText = new System.Windows.Controls.TextBlock
+            var nameText = new TextBlock
             {
                 Text = project.Name,
                 FontSize = 17,
-                FontWeight = System.Windows.FontWeights.SemiBold,
+                FontWeight = FontWeights.SemiBold,
                 Foreground = new System.Windows.Media.SolidColorBrush(c(0xcd, 0xd6, 0xf4)),
                 Margin = new System.Windows.Thickness(72, 22, 20, 0),
-                TextTrimming = System.Windows.TextTrimming.CharacterEllipsis,
+                TextTrimming = TextTrimming.CharacterEllipsis,
                 Height = 22,
                 VerticalAlignment = System.Windows.VerticalAlignment.Top
             };
 
-            // Status text
-            var statusText = new System.Windows.Controls.TextBlock
+            var statusText = new TextBlock
             {
-                Text = serverOk ? RGC.Services.Localization.T("lib.configured") : RGC.Services.Localization.T("lib.not_configured"),
+                Text = serverOk ? Localization.T("lib.configured") : Localization.T("lib.not_configured"),
                 FontSize = 10,
                 Foreground = new System.Windows.Media.SolidColorBrush(serverOk ? c(0xa6, 0xe3, 0xa1) : c(0x6c, 0x70, 0x8b)),
-                TextTrimming = System.Windows.TextTrimming.CharacterEllipsis
+                TextTrimming = TextTrimming.CharacterEllipsis
             };
 
-            // Full server path (small, truncated)
-            var pathFull = serverOk ? project.ServerPath : RGC.Services.Localization.T("lib.no_path");
-            var pathText = new System.Windows.Controls.TextBlock
+            var pathFull = serverOk ? project.ServerPath : Localization.T("lib.no_path");
+            var pathText = new TextBlock
             {
                 Text = pathFull,
                 FontSize = 9,
                 Foreground = new System.Windows.Media.SolidColorBrush(c(0x58, 0x5b, 0x70)),
-                TextTrimming = System.Windows.TextTrimming.CharacterEllipsis,
+                TextTrimming = TextTrimming.CharacterEllipsis,
                 ToolTip = pathFull
             };
 
-            // Version + last opened on one line
-            var infoText = new System.Windows.Controls.TextBlock
+            var infoText = new TextBlock
             {
                 FontSize = 9,
                 Foreground = new System.Windows.Media.SolidColorBrush(c(0x58, 0x5b, 0x70)),
-                TextTrimming = System.Windows.TextTrimming.CharacterEllipsis
+                TextTrimming = TextTrimming.CharacterEllipsis
             };
-            var lastOpen = string.Format(RGC.Services.Localization.T("lib.last_open"), project.LastOpenedAt.ToString("dd MMM yyyy"));
+            var lastOpen = string.Format(Localization.T("lib.last_open"), project.LastOpenedAt.ToString("dd MMM yyyy"));
             if (!string.IsNullOrEmpty(dayzVersion))
-                infoText.Text = $"{string.Format(RGC.Services.Localization.T("lib.dayz_version"), dayzVersion)} · {lastOpen}";
+                infoText.Text = $"{string.Format(Localization.T("lib.dayz_version"), dayzVersion)} · {lastOpen}";
             else
                 infoText.Text = lastOpen;
 
-            // Open button
-            var openBtn = new System.Windows.Controls.Button
+            var openBtn = new Button
             {
-                Content = RGC.Services.Localization.T("lib.open"),
+                Content = Localization.T("lib.open"),
                 Height = 30,
                 FontSize = 11,
-                FontWeight = System.Windows.FontWeights.SemiBold,
+                FontWeight = FontWeights.SemiBold,
                 Background = new System.Windows.Media.SolidColorBrush(accent),
                 Foreground = new System.Windows.Media.SolidColorBrush(c(0x1e, 0x1e, 0x2e)),
                 BorderThickness = new System.Windows.Thickness(0),
@@ -177,8 +191,7 @@ namespace RGC
             };
             openBtn.Click += (_, _) => OpenProject(project);
 
-            // Delete button
-            var deleteBtn = new System.Windows.Controls.Button
+            var deleteBtn = new Button
             {
                 Content = "✕",
                 Width = 24, Height = 24,
@@ -196,8 +209,7 @@ namespace RGC
             deleteBtn.MouseEnter += (_, _) => { deleteBtn.Foreground = new System.Windows.Media.SolidColorBrush(c(0xf3, 0x8b, 0xa8)); deleteBtn.Opacity = 1; };
             deleteBtn.MouseLeave += (_, _) => { deleteBtn.Foreground = new System.Windows.Media.SolidColorBrush(c(0x58, 0x5b, 0x70)); deleteBtn.Opacity = 0.4; };
 
-            // Status dot
-            var statusDot = new System.Windows.Controls.Border
+            var statusDot = new Border
             {
                 Width = 8, Height = 8,
                 CornerRadius = new System.Windows.CornerRadius(4),
@@ -207,8 +219,7 @@ namespace RGC
                 Margin = new System.Windows.Thickness(0, 14, 46, 0)
             };
 
-            // Stack info in top area
-            var infoStack = new System.Windows.Controls.StackPanel
+            var infoStack = new StackPanel
             {
                 Margin = new System.Windows.Thickness(72, 46, 20, 0),
                 VerticalAlignment = System.Windows.VerticalAlignment.Top
@@ -217,8 +228,7 @@ namespace RGC
             infoStack.Children.Add(pathText);
             infoStack.Children.Add(infoText);
 
-            // Layout
-            var innerGrid = new System.Windows.Controls.Grid();
+            var innerGrid = new Grid();
             innerGrid.Children.Add(avatar);
             innerGrid.Children.Add(nameText);
             innerGrid.Children.Add(infoStack);
@@ -226,7 +236,7 @@ namespace RGC
             innerGrid.Children.Add(deleteBtn);
             innerGrid.Children.Add(statusDot);
 
-            var card = new System.Windows.Controls.Border
+            var card = new Border
             {
                 Width = 250, Height = 220,
                 Margin = new System.Windows.Thickness(8, 8, 28, 28),
@@ -239,14 +249,12 @@ namespace RGC
             };
             card.RenderTransform = entranceTransform;
 
-            // === Entrance animation ===
             card.Loaded += (_, _) =>
             {
                 entranceTransform.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, entranceAnim);
                 card.BeginAnimation(System.Windows.UIElement.OpacityProperty, fadeAnim);
             };
 
-            // === Hover animation ===
             var glowAnim = new System.Windows.Media.Animation.ColorAnimation
             {
                 To = c(0x89, 0xb4, 0xfa),
@@ -274,6 +282,301 @@ namespace RGC
             return card;
         }
 
+        private Border CreateFtpCard(FtpProject ftp, int index)
+        {
+            var c = System.Windows.Media.Color.FromRgb;
+            var accent = AccentColors[(index + AccentColors.Length / 2) % AccentColors.Length];
+
+            var entranceTransform = new System.Windows.Media.TranslateTransform(0, 30);
+            var entranceAnim = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 30, To = 0,
+                Duration = TimeSpan.FromMilliseconds(400 + index * 60),
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+            };
+            var fadeAnim = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0, To = 0.95,
+                Duration = TimeSpan.FromMilliseconds(400 + index * 60),
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+            };
+
+            var avatar = new Border
+            {
+                Width = 44, Height = 44,
+                CornerRadius = new System.Windows.CornerRadius(12),
+                Background = new System.Windows.Media.SolidColorBrush(c(0x31, 0x32, 0x44)),
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
+                VerticalAlignment = System.Windows.VerticalAlignment.Top,
+                Margin = new System.Windows.Thickness(20, 20, 0, 0),
+                Child = new TextBlock
+                {
+                    Text = "🌐",
+                    FontSize = 20,
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    VerticalAlignment = System.Windows.VerticalAlignment.Center
+                }
+            };
+
+            var nameText = new TextBlock
+            {
+                Text = ftp.Name,
+                FontSize = 17,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new System.Windows.Media.SolidColorBrush(c(0xcd, 0xd6, 0xf4)),
+                Margin = new System.Windows.Thickness(72, 22, 20, 0),
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                Height = 22,
+                VerticalAlignment = System.Windows.VerticalAlignment.Top
+            };
+
+            var hostText = new TextBlock
+            {
+                Text = $"{ftp.Host}:{ftp.Port}",
+                FontSize = 10,
+                Foreground = new System.Windows.Media.SolidColorBrush(c(0xa6, 0xe3, 0xa1)),
+                TextTrimming = TextTrimming.CharacterEllipsis
+            };
+
+            var remotePath = new TextBlock
+            {
+                Text = ftp.RemotePath,
+                FontSize = 9,
+                Foreground = new System.Windows.Media.SolidColorBrush(c(0x58, 0x5b, 0x70)),
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                ToolTip = ftp.RemotePath
+            };
+
+            var infoText = new TextBlock
+            {
+                Text = string.Format(Localization.T("lib.last_open"), ftp.LastOpenedAt.ToString("dd MMM yyyy")),
+                FontSize = 9,
+                Foreground = new System.Windows.Media.SolidColorBrush(c(0x58, 0x5b, 0x70)),
+                TextTrimming = TextTrimming.CharacterEllipsis
+            };
+
+            var openBtn = new Button
+            {
+                Content = Localization.T("ftp.settings"),
+                Height = 30,
+                FontSize = 11,
+                FontWeight = FontWeights.SemiBold,
+                Background = new System.Windows.Media.SolidColorBrush(accent),
+                Foreground = new System.Windows.Media.SolidColorBrush(c(0x1e, 0x1e, 0x2e)),
+                BorderThickness = new System.Windows.Thickness(0),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                Padding = new System.Windows.Thickness(14, 0, 14, 0),
+                Margin = new System.Windows.Thickness(20, 0, 20, 14),
+                VerticalAlignment = System.Windows.VerticalAlignment.Bottom,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch
+            };
+            openBtn.Click += (_, _) => OpenFtpSettings(ftp);
+
+            var deleteBtn = new Button
+            {
+                Content = "✕",
+                Width = 24, Height = 24,
+                Background = System.Windows.Media.Brushes.Transparent,
+                Foreground = new System.Windows.Media.SolidColorBrush(c(0x58, 0x5b, 0x70)),
+                BorderThickness = new System.Windows.Thickness(0),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                FontSize = 11,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Right,
+                VerticalAlignment = System.Windows.VerticalAlignment.Top,
+                Margin = new System.Windows.Thickness(0, 12, 12, 0),
+                Opacity = 0.4
+            };
+            deleteBtn.Click += (_, _) => DeleteFtpProject(ftp);
+            deleteBtn.MouseEnter += (_, _) => { deleteBtn.Foreground = new System.Windows.Media.SolidColorBrush(c(0xf3, 0x8b, 0xa8)); deleteBtn.Opacity = 1; };
+            deleteBtn.MouseLeave += (_, _) => { deleteBtn.Foreground = new System.Windows.Media.SolidColorBrush(c(0x58, 0x5b, 0x70)); deleteBtn.Opacity = 0.4; };
+
+            var infoStack = new StackPanel
+            {
+                Margin = new System.Windows.Thickness(72, 46, 20, 0),
+                VerticalAlignment = System.Windows.VerticalAlignment.Top
+            };
+            infoStack.Children.Add(hostText);
+            infoStack.Children.Add(remotePath);
+            infoStack.Children.Add(infoText);
+
+            var innerGrid = new Grid();
+            innerGrid.Children.Add(avatar);
+            innerGrid.Children.Add(nameText);
+            innerGrid.Children.Add(infoStack);
+            innerGrid.Children.Add(openBtn);
+            innerGrid.Children.Add(deleteBtn);
+
+            var card = new Border
+            {
+                Width = 250, Height = 220,
+                Margin = new System.Windows.Thickness(8, 8, 28, 28),
+                Background = new System.Windows.Media.SolidColorBrush(c(0x1e, 0x1e, 0x2e)),
+                CornerRadius = new System.Windows.CornerRadius(14),
+                BorderThickness = new System.Windows.Thickness(1),
+                BorderBrush = new System.Windows.Media.SolidColorBrush(c(0x31, 0x32, 0x44)),
+                Child = innerGrid,
+                Opacity = 0
+            };
+            card.RenderTransform = entranceTransform;
+
+            card.Loaded += (_, _) =>
+            {
+                entranceTransform.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, entranceAnim);
+                card.BeginAnimation(System.Windows.UIElement.OpacityProperty, fadeAnim);
+            };
+
+            var glowAnim = new System.Windows.Media.Animation.ColorAnimation
+            {
+                To = c(0x89, 0xb4, 0xfa),
+                Duration = TimeSpan.FromMilliseconds(150),
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+            };
+            var unglowAnim = new System.Windows.Media.Animation.ColorAnimation
+            {
+                To = c(0x31, 0x32, 0x44),
+                Duration = TimeSpan.FromMilliseconds(150),
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+            };
+            card.MouseEnter += (_, _) =>
+            {
+                card.Background = new System.Windows.Media.SolidColorBrush(c(0x26, 0x26, 0x38));
+                card.BorderBrush.BeginAnimation(System.Windows.Media.SolidColorBrush.ColorProperty, glowAnim);
+            };
+            card.MouseLeave += (_, _) =>
+            {
+                card.Background = new System.Windows.Media.SolidColorBrush(c(0x1e, 0x1e, 0x2e));
+                card.BorderBrush.BeginAnimation(System.Windows.Media.SolidColorBrush.ColorProperty, unglowAnim);
+            };
+            card.MouseDown += (_, _) => OpenFtpSettings(ftp);
+
+            return card;
+        }
+
+        private Border CreateToolCard(ToolItem tool, int index)
+        {
+            var c = System.Windows.Media.Color.FromRgb;
+
+            var entranceTransform = new System.Windows.Media.TranslateTransform(0, 30);
+            var entranceAnim = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 30, To = 0,
+                Duration = TimeSpan.FromMilliseconds(400 + index * 60),
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+            };
+            var fadeAnim = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0, To = 0.95,
+                Duration = TimeSpan.FromMilliseconds(400 + index * 60),
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+            };
+
+            var avatar = new Border
+            {
+                Width = 44, Height = 44,
+                CornerRadius = new System.Windows.CornerRadius(12),
+                Background = new System.Windows.Media.SolidColorBrush(c(0x31, 0x32, 0x44)),
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
+                VerticalAlignment = System.Windows.VerticalAlignment.Top,
+                Margin = new System.Windows.Thickness(20, 20, 0, 0),
+                Child = new TextBlock
+                {
+                    Text = tool.Icon,
+                    FontSize = 20,
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    VerticalAlignment = System.Windows.VerticalAlignment.Center
+                }
+            };
+
+            var nameText = new TextBlock
+            {
+                Text = tool.Name,
+                FontSize = 17,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new System.Windows.Media.SolidColorBrush(c(0xcd, 0xd6, 0xf4)),
+                Margin = new System.Windows.Thickness(72, 22, 20, 0),
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                Height = 22,
+                VerticalAlignment = System.Windows.VerticalAlignment.Top
+            };
+
+            var descText = new TextBlock
+            {
+                Text = tool.Description,
+                FontSize = 10,
+                Foreground = new System.Windows.Media.SolidColorBrush(c(0x6c, 0x70, 0x8b)),
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new System.Windows.Thickness(72, 46, 20, 0),
+                VerticalAlignment = System.Windows.VerticalAlignment.Top
+            };
+
+            var runBtn = new Button
+            {
+                Content = "▶ " + Localization.T("tools.run"),
+                Height = 30,
+                FontSize = 11,
+                FontWeight = FontWeights.SemiBold,
+                Background = new System.Windows.Media.SolidColorBrush(c(0x89, 0xb4, 0xfa)),
+                Foreground = new System.Windows.Media.SolidColorBrush(c(0x1e, 0x1e, 0x2e)),
+                BorderThickness = new System.Windows.Thickness(0),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                Padding = new System.Windows.Thickness(14, 0, 14, 0),
+                Margin = new System.Windows.Thickness(20, 0, 20, 14),
+                VerticalAlignment = System.Windows.VerticalAlignment.Bottom,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch
+            };
+            runBtn.Click += (_, _) => RunTool(tool.Action);
+
+            var innerGrid = new Grid();
+            innerGrid.Children.Add(avatar);
+            innerGrid.Children.Add(nameText);
+            innerGrid.Children.Add(descText);
+            innerGrid.Children.Add(runBtn);
+
+            var card = new Border
+            {
+                Width = 250, Height = 220,
+                Margin = new System.Windows.Thickness(8, 8, 28, 28),
+                Background = new System.Windows.Media.SolidColorBrush(c(0x1e, 0x1e, 0x2e)),
+                CornerRadius = new System.Windows.CornerRadius(14),
+                BorderThickness = new System.Windows.Thickness(1),
+                BorderBrush = new System.Windows.Media.SolidColorBrush(c(0x31, 0x32, 0x44)),
+                Child = innerGrid,
+                Opacity = 0
+            };
+            card.RenderTransform = entranceTransform;
+
+            card.Loaded += (_, _) =>
+            {
+                entranceTransform.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, entranceAnim);
+                card.BeginAnimation(System.Windows.UIElement.OpacityProperty, fadeAnim);
+            };
+
+            var glowAnim = new System.Windows.Media.Animation.ColorAnimation
+            {
+                To = c(0x89, 0xb4, 0xfa),
+                Duration = TimeSpan.FromMilliseconds(150),
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+            };
+            var unglowAnim = new System.Windows.Media.Animation.ColorAnimation
+            {
+                To = c(0x31, 0x32, 0x44),
+                Duration = TimeSpan.FromMilliseconds(150),
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+            };
+            card.MouseEnter += (_, _) =>
+            {
+                card.Background = new System.Windows.Media.SolidColorBrush(c(0x26, 0x26, 0x38));
+                card.BorderBrush.BeginAnimation(System.Windows.Media.SolidColorBrush.ColorProperty, glowAnim);
+            };
+            card.MouseLeave += (_, _) =>
+            {
+                card.Background = new System.Windows.Media.SolidColorBrush(c(0x1e, 0x1e, 0x2e));
+                card.BorderBrush.BeginAnimation(System.Windows.Media.SolidColorBrush.ColorProperty, unglowAnim);
+            };
+
+            return card;
+        }
+
         private void OpenProject(Project project)
         {
             project.LastOpenedAt = DateTime.Now;
@@ -283,36 +586,57 @@ namespace RGC
             Close();
         }
 
+        private void OpenFtpSettings(FtpProject? ftp)
+        {
+            var wnd = new FtpSettingsWindow(ftp);
+            wnd.Owner = this;
+            if (wnd.ShowDialog() == true)
+                LoadFtpProjects();
+        }
+
         private void DeleteProject(Project project)
         {
-            var deleteMsg = string.Format(RGC.Services.Localization.T("lib.delete_msg"), project.Name);
-            if (System.Windows.MessageBox.Show(this, deleteMsg,
-                RGC.Services.Localization.T("lib.delete_title"),
-                System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning)
-                == System.Windows.MessageBoxResult.Yes)
+            var deleteMsg = string.Format(Localization.T("lib.delete_msg"), project.Name);
+            if (MessageBox.Show(this, deleteMsg,
+                Localization.T("lib.delete_title"),
+                MessageBoxButton.YesNo, MessageBoxImage.Warning)
+                == MessageBoxResult.Yes)
             {
                 ProjectService.Delete(project.Id);
                 LoadProjects();
             }
         }
 
-        private void NewProject_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void DeleteFtpProject(FtpProject ftp)
+        {
+            var deleteMsg = string.Format(Localization.T("lib.delete_msg"), ftp.Name);
+            if (MessageBox.Show(this, deleteMsg,
+                Localization.T("lib.delete_title"),
+                MessageBoxButton.YesNo, MessageBoxImage.Warning)
+                == MessageBoxResult.Yes)
+            {
+                FtpProjectService.Delete(ftp.Id);
+                LoadFtpProjects();
+            }
+        }
+
+        private void NewProject_Click(object sender, RoutedEventArgs e)
         {
             var c = System.Windows.Media.Color.FromRgb;
-            var dialog = new System.Windows.Window
+            var dialog = new Window
             {
-                Title = "Новый проект", Width = 400,
-                SizeToContent = System.Windows.SizeToContent.Height,
-                ResizeMode = System.Windows.ResizeMode.NoResize,
-                WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner,
+                Title = Localization.T("lib.new_title"), Width = 400,
+                SizeToContent = SizeToContent.Height,
+                ResizeMode = ResizeMode.NoResize,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Owner = this,
-                WindowStyle = System.Windows.WindowStyle.None,
+                WindowStyle = WindowStyle.None,
                 AllowsTransparency = true,
                 Background = System.Windows.Media.Brushes.Transparent,
                 FontFamily = new System.Windows.Media.FontFamily("Segoe UI")
             };
 
-            var nameBox = new System.Windows.Controls.TextBox
+            var nameBox = new TextBox
             {
                 FontSize = 14,
                 Padding = new System.Windows.Thickness(12, 10, 12, 10),
@@ -322,7 +646,7 @@ namespace RGC
                 CaretBrush = new System.Windows.Media.SolidColorBrush(c(0x89, 0xb4, 0xfa)),
                 VerticalAlignment = System.Windows.VerticalAlignment.Center
             };
-            var genNameBtn = new System.Windows.Controls.Button
+            var genNameBtn = new Button
             {
                 Content = "🎲",
                 Width = 32, Height = 32,
@@ -333,36 +657,36 @@ namespace RGC
                 FontSize = 14,
                 Margin = new System.Windows.Thickness(6, 0, 0, 0),
                 VerticalAlignment = System.Windows.VerticalAlignment.Center,
-                ToolTip = "Сгенерировать название"
+                ToolTip = Localization.T("lib.gen_tooltip")
             };
             genNameBtn.Click += (_, _) => { nameBox.Text = GeneratorService.GenerateName(); };
-            var namePanel = new System.Windows.Controls.DockPanel();
-            System.Windows.Controls.DockPanel.SetDock(genNameBtn, System.Windows.Controls.Dock.Right);
+            var namePanel = new DockPanel();
+            DockPanel.SetDock(genNameBtn, Dock.Right);
             namePanel.Children.Add(genNameBtn);
             namePanel.Children.Add(nameBox);
 
-            var descText = new System.Windows.Controls.TextBlock
+            var descText = new TextBlock
             {
-                Text = "Папку сервера можно будет указать позже в настройках проекта.",
+                Text = Localization.T("lib.new_desc"),
                 FontSize = 11,
                 Foreground = new System.Windows.Media.SolidColorBrush(c(0x58, 0x5b, 0x70)),
                 Margin = new System.Windows.Thickness(0, 4, 0, 0),
-                TextWrapping = System.Windows.TextWrapping.Wrap
+                TextWrapping = TextWrapping.Wrap
             };
 
-            var okBtn = new System.Windows.Controls.Button
+            var okBtn = new Button
             {
-                Content = RGC.Services.Localization.T("lib.new_btn"), IsDefault = true, Height = 38,
+                Content = Localization.T("lib.new_btn"), IsDefault = true, Height = 38,
                 Background = new System.Windows.Media.SolidColorBrush(c(0x89, 0xb4, 0xfa)),
                 Foreground = new System.Windows.Media.SolidColorBrush(c(0x1e, 0x1e, 0x2e)),
                 BorderThickness = new System.Windows.Thickness(0),
                 Cursor = System.Windows.Input.Cursors.Hand,
-                FontSize = 14, FontWeight = System.Windows.FontWeights.Bold,
+                FontSize = 14, FontWeight = FontWeights.Bold,
                 Margin = new System.Windows.Thickness(0, 16, 0, 0)
             };
-            var cancelBtn = new System.Windows.Controls.Button
+            var cancelBtn = new Button
             {
-                Content = RGC.Services.Localization.T("lib.new_cancel"), IsCancel = true, Height = 36,
+                Content = Localization.T("lib.new_cancel"), IsCancel = true, Height = 36,
                 Background = System.Windows.Media.Brushes.Transparent,
                 Foreground = new System.Windows.Media.SolidColorBrush(c(0x6c, 0x70, 0x8b)),
                 BorderThickness = new System.Windows.Thickness(0),
@@ -370,18 +694,18 @@ namespace RGC
                 FontSize = 13, Margin = new System.Windows.Thickness(0, 4, 0, 0)
             };
 
-            var headerBar = new System.Windows.Controls.Border
+            var headerBar = new Border
             {
                 Height = 4,
                 Background = new System.Windows.Media.SolidColorBrush(c(0x89, 0xb4, 0xfa)),
                 BorderThickness = new System.Windows.Thickness(0)
             };
 
-            var fieldPanel = new System.Windows.Controls.StackPanel
+            var fieldPanel = new StackPanel
                 { Margin = new System.Windows.Thickness(28, 20, 28, 24) };
-            fieldPanel.Children.Add(new System.Windows.Controls.TextBlock
+            fieldPanel.Children.Add(new TextBlock
             {
-                Text = RGC.Services.Localization.T("lib.new_name"), FontSize = 13, FontWeight = System.Windows.FontWeights.SemiBold,
+                Text = Localization.T("lib.new_name"), FontSize = 13, FontWeight = FontWeights.SemiBold,
                 Foreground = new System.Windows.Media.SolidColorBrush(c(0xcd, 0xd6, 0xf4)),
                 Margin = new System.Windows.Thickness(0, 0, 0, 6)
             });
@@ -390,7 +714,7 @@ namespace RGC
             fieldPanel.Children.Add(okBtn);
             fieldPanel.Children.Add(cancelBtn);
 
-            var outerStack = new System.Windows.Controls.StackPanel();
+            var outerStack = new StackPanel();
             outerStack.Children.Add(headerBar);
             outerStack.Children.Add(fieldPanel);
 
@@ -403,8 +727,8 @@ namespace RGC
                 var name = nameBox.Text.Trim();
                 if (string.IsNullOrEmpty(name))
                 {
-                    System.Windows.MessageBox.Show(dialog, "Введите название проекта.", "Ошибка",
-                        System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    MessageBox.Show(dialog, Localization.T("lib.new_name_err"), "",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
                 createdProject = new Project { Name = name };
@@ -420,9 +744,25 @@ namespace RGC
             }
         }
 
-        private void Close_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void AddFtp_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.Application.Current.Shutdown();
+            OpenFtpSettings(null);
+        }
+
+        private void RunTool(string action)
+        {
+            switch (action)
+            {
+                case "steamcmd":
+                    break;
+                case "configconv":
+                    break;
+            }
+        }
+
+        private void Close_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
         }
 
         private void Window_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)

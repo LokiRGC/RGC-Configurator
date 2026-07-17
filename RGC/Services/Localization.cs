@@ -163,9 +163,52 @@ namespace RGC.Services
                 // Mod config tab
                 ["modconfig.title"] = "Файлы конфигурации модов",
 
+                // Library sections
+                ["lib.local_title"] = "Локальные проекты",
+                ["lib.ftp_title"] = "FTP проекты",
+                ["lib.tools_title"] = "Инструменты",
+                ["lib.add_ftp"] = "＋",
+                ["lib.new_desc"] = "Папку сервера можно будет указать позже в настройках проекта.",
+
+                // FTP window
+                ["ftp.settings"] = "Настройки",
+                ["ftp.title_new"] = "Новый FTP проект",
+                ["ftp.title_edit"] = "Настройки FTP проекта",
+                ["ftp.name"] = "Название",
+                ["ftp.host"] = "Хост",
+                ["ftp.port"] = "Порт",
+                ["ftp.username"] = "Имя пользователя",
+                ["ftp.password"] = "Пароль",
+                ["ftp.remote_path"] = "Удалённый путь",
+                ["ftp.connect_label"] = "Подключение к FTP",
+                ["ftp.connect_btn"] = "🔗 Подключиться к FTP",
+                ["ftp.local_path"] = "Локальный путь",
+                ["ftp.save"] = "💾 Сохранить",
+                ["ftp.create"] = "➕ Создать",
+                ["ftp.cancel"] = "Отмена",
+                ["ftp.delete"] = "🗑 Удалить",
+                ["ftp.fill_required"] = "Заполните название и хост.",
+                ["ftp.delete_confirm"] = "Удалить FTP проект «{0}»?",
+
+                // Tools
+                ["tools.steamcmd"] = "Установка и обновление DayZ сервера через SteamCMD",
+                ["tools.configconv"] = "Конвертация конфигов между форматами",
+                ["tools.run"] = "Запуск",
+
                 // Progress
                 ["progress.download"] = "Скачивание...",
                 ["progress.installing"] = "Установка...",
+
+                // Startup choice
+                ["startup.title"] = "RGC DayZ Configurator",
+                ["startup.ask"] = "Что вы хотите сделать?",
+                ["startup.edit_server"] = "Редактировать сервер",
+                ["startup.edit_server_desc"] = "Открыть существующий проект или создать новый",
+                ["startup.connect_ftp"] = "Подключиться к FTP",
+                ["startup.connect_ftp_desc"] = "Подключиться к FTP серверу для управления файлами",
+                ["startup.autobuild"] = "Автосборка проекта",
+                ["startup.autobuild_desc"] = "Собрать сервер с модами и конфигами автоматически",
+                ["startup.autobuild_soon"] = "Скоро будет доступно!",
             },
             ["EN"] = new()
             {
@@ -324,9 +367,52 @@ namespace RGC.Services
                 // Mod config tab
                 ["modconfig.title"] = "Mod Configuration Files",
 
+                // Library sections
+                ["lib.local_title"] = "Local Projects",
+                ["lib.ftp_title"] = "FTP Projects",
+                ["lib.tools_title"] = "Tools",
+                ["lib.add_ftp"] = "＋",
+                ["lib.new_desc"] = "You can set the server folder later in project settings.",
+
+                // FTP window
+                ["ftp.settings"] = "Settings",
+                ["ftp.title_new"] = "New FTP Project",
+                ["ftp.title_edit"] = "FTP Project Settings",
+                ["ftp.name"] = "Name",
+                ["ftp.host"] = "Host",
+                ["ftp.port"] = "Port",
+                ["ftp.username"] = "Username",
+                ["ftp.password"] = "Password",
+                ["ftp.remote_path"] = "Remote Path",
+                ["ftp.connect_label"] = "FTP Connection",
+                ["ftp.connect_btn"] = "🔗 Connect to FTP",
+                ["ftp.local_path"] = "Local Path",
+                ["ftp.save"] = "💾 Save",
+                ["ftp.create"] = "➕ Create",
+                ["ftp.cancel"] = "Cancel",
+                ["ftp.delete"] = "🗑 Delete",
+                ["ftp.fill_required"] = "Please fill in Name and Host.",
+                ["ftp.delete_confirm"] = "Delete FTP project «{0}»?",
+
+                // Tools
+                ["tools.steamcmd"] = "Install and update DayZ server via SteamCMD",
+                ["tools.configconv"] = "Convert configs between formats",
+                ["tools.run"] = "Run",
+
                 // Progress
                 ["progress.download"] = "Downloading...",
                 ["progress.installing"] = "Installing...",
+
+                // Startup choice
+                ["startup.title"] = "RGC DayZ Configurator",
+                ["startup.ask"] = "What would you like to do?",
+                ["startup.edit_server"] = "Edit Server",
+                ["startup.edit_server_desc"] = "Open an existing project or create a new one",
+                ["startup.connect_ftp"] = "Connect to FTP",
+                ["startup.connect_ftp_desc"] = "Connect to an FTP server to manage files",
+                ["startup.autobuild"] = "Auto-build Project",
+                ["startup.autobuild_desc"] = "Automatically assemble a server with mods and configs",
+                ["startup.autobuild_soon"] = "Coming soon!",
             }
         };
 
